@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoBox - Sistema Logístico Operativo</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --primary: #5a3e83;
+            --primary-hover: #48316b;
+            --border-color: #dee2e6;
+            --success-bg: #e8f5e9;
+            --success-color: #2e7d32;
+            --warning-bg: #fffde7;
+            --warning-color: #f57f17;
+            --danger-bg: #ffebee;
+            --danger-color: #c62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+        .brand-logo span {
+            color: white;
+            background-color: var(--primary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 2px;
+            font-weight: 700;
+        }
+
+        .btn-back {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .btn-back:hover {
+            background-color: var(--bg-color);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #role-selector-view {
+            text-align: center;
+        }
+
+        #role-selector-view h2 {
+            font-size: 1.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        #role-selector-view p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            justify-content: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .role-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            text-align: left;
+        }
+
+        .role-card:hover {
+            border-color: var(--primary);
+        }
+
+        .role-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .role-card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+            text-align: left;
+        }
+
+        .role-view {
+            display: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2rem;
+        }
+
+        .role-view.active {
+            display: block;
+        }
+
+        .role-view h2 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.55rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        button.btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        button.btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-recibido { background-color: #e3f2fd; color: #0d47a1; }
+        .status-transito { background-color: var(--warning-bg); color: var(--warning-color); }
+        .status-entregado { background-color: var(--success-bg); color: var(--success-color); }
+        .status-perdido, .status-danado, .status-rechazado { background-color: var(--danger-bg); color: var(--danger-color); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            font-weight: 600;
+        }
+
+        .timeline {
+            margin-top: 1rem;
+            border-left: 2px solid var(--border-color);
+            padding-left: 1rem;
+        }
+
+        .timeline-item {
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .timeline-date {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .upload-dropzone {
+            border: 2px dashed var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: #fafbfc;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .upload-dropzone:hover {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-logo">Cargo<span>Box</span></div>
+        <button class="btn-back" id="btn-volver" style="display: none;" onclick="mostrarSelector()">Cambiar rol</button>
+    </header>
+
+    <main>
+        <!-- Selector de Roles -->
+        <section id="role-selector-view">
+            <h2>Seleccione su rol operativo</h2>
+            <p>Cada rol otorga acceso exclusivo a sus módulos de control y flujo del negocio.</p>
+            
+            <div class="roles-grid">
+                <div class="role-card" onclick="seleccionarRol('cliente')">
+                    <h3>Cliente</h3>
+                    <p>Rastreo de paquete, ruta, costo y actualizaciones.</p>
+                </div>
+                <div class="role-card" onclick="seleccionarRol('recepcion')">
+                    <h3>Recepción (Sucursal)</h3>
+                    <p>Registro, validación de dimensiones, ciudades, cálculo de tarifa y guía.</p>
+                </div>
+                <div class="role-card" onclick="seleccionarRol('transito')">
+                    <h3>Centros de Distribución y Tránsito</h3>
+                    <p>Actualización secuencial en CD y gestión de paquetes en centro de destino.</p>
+                </div>
+                <div class="role-card" onclick="seleccionarRol('repartidor')">
+                    <h3>Repartidor</h3>
+                    <p>Gestión de ruta, inicio/completado de entrega y registro individualizado de incidencias.</p>
+                </div>
+                <div class="role-card" onclick="seleccionarRol('admin')">
+                    <h3>Administrador</h3>
+                    <p>Base de datos global con el detalle completo de los paquetes y costos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA CLIENTE -->
+        <div id="view-cliente" class="role-view">
+            <h2>Módulo de Cliente</h2>
+            <div class="form-group">
+                <label>Número de guía de paquete</label>
+                <input type="text" id="cli-guia" placeholder="Ej. CBX-BEF8A079" value="">
+            </div>
+            <button class="btn-primary" onclick="consultarGuiaCliente()">Rastrear paquete</button>
+            <div id="cli-resultado" style="margin-top: 1.5rem;"></div>
+        </div>
+
+        <!-- VISTA RECEPCIÓN -->
+        <div id="view-recepcion" class="role-view">
+            <h2>Módulo de Recepción (Sucursal)</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Validación física, ciudades de origen/destino, cálculo de tarifa y teléfono.</p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ciudad de Origen</label>
+                    <select id="rec-origen">
+                        <option value="Monterrey">Monterrey</option>
+                        <option value="San Nicolás de los Garza">San Nicolás de los Garza</option>
+                        <option value="Apodaca">Apodaca</option>
+                        <option value="Guadalupe">Guadalupe</option>
+                        <option value="San Pedro Garza García">San Pedro Garza García</option>
+                        <option value="Santa Catarina">Santa Catarina</option>
+                        <option value="General Escobedo">General Escobedo</option>
+                        <option value="García">García</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ciudad de Destino</label>
+                    <select id="rec-destino">
+                        <option value="Monterrey">Monterrey</option>
+                        <option value="San Nicolás de los Garza">San Nicolás de los Garza</option>
+                        <option value="Apodaca">Apodaca</option>
+                        <option value="Guadalupe">Guadalupe</option>
+                        <option value="San Pedro Garza García">San Pedro Garza García</option>
+                        <option value="Santa Catarina">Santa Catarina</option>
+                        <option value="General Escobedo">General Escobedo</option>
+                        <option value="García">García</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono de Contacto (10 dígitos)</label>
+                    <input type="text" id="rec-tel" placeholder="Ej. 8112345678" value="" maxlength="10">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Peso (kg) [Máx 30 kg]</label>
+                    <input type="number" id="rec-peso" placeholder="Ej. 5.0" value="" step="0.1" min="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Largo (m) [Máx 1.5m]</label>
+                    <input type="number" id="rec-largo" placeholder="Ej. 0.4" value="" step="0.1" min="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Ancho (m) [Máx 1.5m]</label>
+                    <input type="number" id="rec-ancho" placeholder="Ej. 0.3" value="" step="0.1" min="0.1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Alto (m) [Máx 1.5m]</label>
+                    <input type="number" id="rec-alto" placeholder="Ej. 0.3" value="" step="0.1" min="0.1">
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="registrarPaqueteRecep()" style="margin-top: 1rem;">Validar, Cotizar y Generar Guía</button>
+            <div id="rec-resultado"></div>
+        </div>
+
+        <!-- VISTA TRÁNSITO -->
+        <div id="view-transito" class="role-view">
+            <h2>Módulo de Centros de Distribución y Tránsito</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Control logístico y avance secuencial en sucursal y centro de destino.</p>
+            <div class="form-group">
+                <label>Número de guía de paquete</label>
+                <input type="text" id="tra-guia" placeholder="Ej. CBX-BEF8A079" value="">
+            </div>
+            <div class="form-group">
+                <label>Actualización Logística</label>
+                <select id="tra-accion">
+                    <option value="CLASIFICADO">Clasificado en sucursal</option>
+                    <option value="EN_TRANSITO">En tránsito al centro de destino</option>
+                    <option value="CENTRO_DESTINO">Llegado al centro de destino</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="ejecutarTransito()">Actualizar Estado</button>
+            <div id="tra-resultado"></div>
+        </div>
+
+        <!-- VISTA REPARTIDOR -->
+        <div id="view-repartidor" class="role-view">
+            <h2>Módulo de Repartidor</h2>
+            <div class="form-group">
+                <label>Número de guía de paquete</label>
+                <input type="text" id="rep-guia" placeholder="Ej. CBX-BEF8A079" value="">
+            </div>
+
+            <!-- Acciones de Reparto -->
+            <div class="form-group">
+                <label>Acción de Entrega</label>
+                <select id="rep-accion" onchange="alternarSeccionIncidencia(false)">
+                    <option value="INICIAR_REPARTO">Iniciar Reparto a Domicilio</option>
+                    <option value="COMPLETAR">Completar Entrega (Requiere Evidencia)</option>
+                </select>
+            </div>
+
+            <!-- Botón / Sección Separada para Registrar Incidencias -->
+            <div style="background: #f8f9fa; border: 1px solid var(--border-color); padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                <label style="color: var(--primary); font-weight: 700; margin-bottom: 0.5rem;">⚠️ Registro de Incidencias de Entrega</label>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <select id="rep-incidencia-tipo" onchange="alternarSeccionIncidencia(true)">
+                        <option value="">-- Seleccione una incidencia si aplica --</option>
+                        <option value="ausente">Ausente (Cliente no encontrado)</option>
+                        <option value="direccion_incorrecta">Dirección Incorrecta</option>
+                        <option value="paquete_danado">Paquete Dañado</option>
+                        <option value="perdida">Pérdida (Más de 72h sin movimiento)</option>
+                        <option value="rechazo">Rechazo (Cliente rechaza paquete)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" id="grupo-evidencia">
+                <label>Evidencia Digital (Firma o Fotografía)</label>
+                <div class="upload-dropzone" onclick="document.getElementById('rep-archivo').click()">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">📂 Haga clic aquí para adjuntar o arrastre su archivo de firma / foto</p>
+                    <input type="file" id="rep-archivo" style="display: none;" onchange="mostrarNombreArchivo(this)">
+                    <span id="file-name-display" style="display:block; margin-top:0.5rem; font-weight:500; color:var(--primary);"></span>
+                </div>
+                <input type="text" id="rep-pod" placeholder="O ingrese descripción de la firma digital">
+            </div>
+
+            <button class="btn-primary" onclick="ejecutarRepartidor()">Procesar Operación</button>
+            <div id="rep-resultado"></div>
+        </div>
+
+        <!-- VISTA ADMINISTRADOR -->
+        <div id="view-admin" class="role-view">
+            <h2>Módulo de Administrador</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Base de datos global con el detalle completo de todos los datos ingresados en recepción.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Guía</th>
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th>Teléfono</th>
+                            <th>Peso</th>
+                            <th>Largo</th>
+                            <th>Ancho</th>
+                            <th>Alto</th>
+                            <th>Costo</th>
+                            <th>Estado Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-tabla-paquetes">
+                        <!-- Dinámico sin resumir -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let baseDatosPaquetes = {};
+
+        function seleccionarRol(rol) {
+            document.getElementById('role-selector-view').style.display = 'none';
+            document.getElementById('btn-volver').style.display = 'block';
+            document.querySelectorAll('.role-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + rol).classList.add('active');
+            if (rol === 'admin') actualizarTablaAdmin();
+        }
+
+        function mostrarSelector() {
+            document.querySelectorAll('.role-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('role-selector-view').style.display = 'block';
+            document.getElementById('btn-volver').style.display = 'none';
+        }
+
+        function obtenerClaseEstado(estado) {
+            if (estado === 'RECIBIDO' || estado === 'CLASIFICADO') return 'status-recibido';
+            if (estado.includes('TRANSITO') || estado.includes('DESTINO') || estado.includes('REPARTO') || estado.includes('RECOLECCION') || estado.includes('INTENTO')) return 'status-transito';
+            if (estado === 'ENTREGADO') return 'status-entregado';
+            if (estado === 'DAÑADO') return 'status-danado';
+            if (estado === 'RECHAZADO') return 'status-rechazado';
+            return 'status-perdido';
+        }
+
+        function mostrarNombreArchivo(input) {
+            const display = document.getElementById('file-name-display');
+            if (input.files && input.files[0]) {
+                display.innerText = "Archivo seleccionado: " + input.files[0].name;
+            }
+        }
+
+        function alternarSeccionIncidencia(esIncidencia) {
+            if (esIncidencia) {
+                document.getElementById('rep-accion').value = '';
+            }
+        }
+
+        function calcularCostoEnvio(origen, destino, peso) {
+            let tarifaBase = 80.0;
+            let costoPeso = peso * 15.0;
+            let recargoDistancia = (origen === destino) ? 20.0 : 65.0;
+            return tarifaBase + costoPeso + recargoDistancia;
+        }
+
+        function consultarGuiaCliente() {
+            const guia = document.getElementById('cli-guia').value.trim();
+            const res = document.getElementById('cli-resultado');
+            
+            if (!baseDatosPaquetes[guia]) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">No se encontró el paquete con la guía ingresada.</div>`;
+                return;
+            }
+
+            let p = baseDatosPaquetes[guia];
+            let timelineHtml = p.historial.map(h => `<div class="timeline-item">• ${h.mensaje} <span class="timeline-date">(${h.fecha})</span></div>`).join('');
+
+            res.innerHTML = `
+                <div style="background:white; border:1px solid var(--border-color); padding:1rem; border-radius:4px;">
+                    <p><b>Número de Guía:</b> ${p.guia} | <b>Ruta:</b> ${p.origen} ➔ ${p.destino}</p>
+                    <p style="margin-top:0.4rem;"><b>Teléfono:</b> ${p.telefono} | <b>Costo de Envío:</b> $${p.costo.toFixed(2)} MXN</p>
+                    <p style="margin-top:0.5rem;"><b>Estado Actual:</b> <span class="badge-status ${obtenerClaseEstado(p.estado)}">${p.estado}</span></p>
+                    <div class="timeline" style="margin-top:1rem;">
+                        <p style="font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">Historial de Actualizaciones:</p>
+                        ${timelineHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function registrarPaqueteRecep() {
+            const origen = document.getElementById('rec-origen').value;
+            const destino = document.getElementById('rec-destino').value;
+            const peso = parseFloat(document.getElementById('rec-peso').value);
+            const largo = parseFloat(document.getElementById('rec-largo').value);
+            const ancho = parseFloat(document.getElementById('rec-ancho').value);
+            const alto = parseFloat(document.getElementById('rec-alto').value);
+            const tel = document.getElementById('rec-tel').value.trim();
+            const res = document.getElementById('rec-resultado');
+
+            if (isNaN(peso) || peso <= 0 || peso > 30) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El peso no puede ser negativo o cero, y tiene un límite máximo de 30 kg.</div>`;
+                return;
+            }
+            if (isNaN(largo) || largo <= 0 || largo > 1.5 || isNaN(ancho) || ancho <= 0 || ancho > 1.5 || isNaN(alto) || alto <= 0 || alto > 1.5) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: Las dimensiones no pueden ser negativas ni cero, y el límite máximo es 1.5 m.</div>`;
+                return;
+            }
+
+            const telRegex = /^\d{10}$/;
+            if (!telRegex.test(tel)) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El teléfono de contacto debe ser exactamente de 10 dígitos numéricos.</div>`;
+                return;
+            }
+
+            let costoCalculado = calcularCostoEnvio(origen, destino, peso);
+
+            const chars = "ABCDEF0123456789";
+            let randomHex = "";
+            for (let i = 0; i < 8; i++) {
+                randomHex += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const nuevaGuia = "CBX-" + randomHex;
+
+            baseDatosPaquetes[nuevaGuia] = {
+                guia: nuevaGuia,
+                origen: origen,
+                destino: destino,
+                peso: peso,
+                largo: largo,
+                ancho: ancho,
+                alto: alto,
+                telefono: tel,
+                costo: costoCalculado,
+                estado: "RECIBIDO",
+                intentos: 0,
+                historial: [{ mensaje: `El paquete ha sido <b>recibido</b> en la sucursal de origen (${origen}) con destino a (${destino}) y se ha generado la guía.`, fecha: new Date().toLocaleDateString() }]
+            };
+
+            res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">¡Se ha generado la guía con éxito! Guía: <b>${nuevaGuia}</b> | Costo estimado: <b>$${costoCalculado.toFixed(2)} MXN</b></div>`;
+        }
+
+        function ejecutarTransito() {
+            const guia = document.getElementById('tra-guia').value.trim();
+            const accion = document.getElementById('tra-accion').value;
+            const res = document.getElementById('tra-resultado');
+
+            if (!baseDatosPaquetes[guia]) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Guía no encontrada en el sistema.</div>`;
+                return;
+            }
+
+            let p = baseDatosPaquetes[guia];
+            if (p.estado === "PERDIDO" || p.estado === "DAÑADO" || p.estado === "RECHAZADO") {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">El paquete se encuentra en estado terminal (perdido, dañado o rechazado) y no puede actualizarse en tránsito.</div>`;
+                return;
+            }
+
+            if (accion === 'CLASIFICADO' && p.estado !== 'RECIBIDO') {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El paquete ya pasó por este estado y no puede regresar a clasificado.</div>`;
+                return;
+            }
+            if (accion === 'EN_TRANSITO' && p.estado !== 'CLASIFICADO') {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error lógico: El paquete debe estar clasificado en sucursal antes de ir en tránsito.</div>`;
+                return;
+            }
+            if (accion === 'CENTRO_DESTINO' && p.estado !== 'EN_TRANSITO' && p.estado !== 'DIRECCION_INCORRECTA' && p.estado !== 'INTENTO_FALLIDO_1') {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error lógico: El paquete debe estar en tránsito o devuelto al centro de destino tras incidencia.</div>`;
+                return;
+            }
+
+            let mensajeHistorial = "";
+            let estadoTexto = "";
+
+            if (accion === 'CLASIFICADO') {
+                estadoTexto = "CLASIFICADO";
+                mensajeHistorial = "El paquete ha sido <b>clasificado</b> correctamente en la sucursal de origen.";
+            } else if (accion === 'EN_TRANSITO') {
+                estadoTexto = "EN_TRANSITO";
+                mensajeHistorial = `El paquete se encuentra <b>en tránsito</b> rumbo al centro de distribución en ${p.destino}.`;
+            } else if (accion === 'CENTRO_DESTINO') {
+                estadoTexto = "CENTRO_DESTINO";
+                mensajeHistorial = `El paquete ha <b>llegado al centro de destino</b> en ${p.destino} y está listo para iniciar el reparto.`;
+            }
+
+            p.estado = estadoTexto;
+            p.historial.push({ mensaje: mensajeHistorial, fecha: new Date().toLocaleDateString() });
+            res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">${mensajeHistorial}</div>`;
+        }
+
+        function ejecutarRepartidor() {
+            const guia = document.getElementById('rep-guia').value.trim();
+            const accion = document.getElementById('rep-accion').value;
+            const incidenciaTipo = document.getElementById('rep-incidencia-tipo').value;
+            const res = document.getElementById('rep-resultado');
+
+            if (!baseDatosPaquetes[guia]) {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Guía no encontrada.</div>`;
+                return;
+            }
+
+            let p = baseDatosPaquetes[guia];
+
+            if (p.estado === "PERDIDO" || p.estado === "EN_PUNTO_RECOLECCION" || p.estado === "DAÑADO" || p.estado === "RECHAZADO") {
+                res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Acción denegada: El paquete está en resguardo, dañado, rechazado o perdido y no puede procesarse en ruta.</div>`;
+                return;
+            }
+
+            // Si se seleccionó una incidencia
+            if (incidenciaTipo) {
+                if (incidenciaTipo === 'ausente') {
+                    p.intentos += 1;
+                    if (p.intentos >= 2) {
+                        p.estado = "EN_PUNTO_RECOLECCION";
+                        p.historial.push({ mensaje: "Se registraron <b>2 intentos fallidos (ausente)</b>. El paquete fue enviado al punto de recolección.", fecha: new Date().toLocaleDateString() });
+                        res.innerHTML = `<div class="alert" style="background:#fff3cd; color:#856404;">Segundo intento fallido registrado. El paquete fue enviado al punto de recolección más cercano.</div>`;
+                    } else {
+                        p.estado = "INTENTO_FALLIDO_1";
+                        p.historial.push({ mensaje: "Incidencia <b>ausente</b> (1er intento). El paquete regresa al centro de destino para programar el segundo intento.", fecha: new Date().toLocaleDateString() });
+                        res.innerHTML = `<div class="alert" style="background:#fff3cd; color:#856404;">Primer intento fallido registrado. El paquete regresa al centro de destino para programar el segundo intento.</div>`;
+                    }
+                } else if (incidenciaTipo === 'direccion_incorrecta') {
+                    p.estado = "DIRECCION_INCORRECTA";
+                    p.historial.push({ mensaje: "Incidencia registrada: <b>Dirección incorrecta</b>. Se contactará al cliente y se corregirá la dirección.", fecha: new Date().toLocaleDateString() });
+                    res.innerHTML = `<div class="alert" style="background:#fff3cd; color:#856404;">Se va a contactar al cliente y se va a corregir la dirección. El paquete regresa al centro de destino para luego iniciar el reparto nuevamente.</div>`;
+                } else if (incidenciaTipo === 'paquete_danado') {
+                    p.estado = "DAÑADO";
+                    p.historial.push({ mensaje: "Incidencia registrada: <b>Paquete dañado</b>. Se ha documentado el daño y generado reporte para evaluación del centro de distribución.", fecha: new Date().toLocaleDateString() });
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Documentar daños: Reporte generado. El centro de distribución evaluará el daño para determinar devolución o cancelación del pedido.</div>`;
+                } else if (incidencia_tipo = incidenciaTipo === 'perdida') {
+                    p.estado = "PERDIDO";
+                    p.historial.push({ mensaje: "Incidencia registrada: <b>Pérdida</b> (>72 horas sin movimiento). Se declara pérdida y procede compensación.", fecha: new Date().toLocaleDateString() });
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">El paquete ha pasado más de 72 horas sin saber nada. Se declara pérdida y se procede con la compensación.</div>`;
+                } else if (incidenciaTipo === 'rechazo') {
+                    p.estado = "RECHAZADO";
+                    p.historial.push({ mensaje: "Incidencia registrada: <b>Rechazo</b> por el destinatario (sin compensación).", fecha: new Date().toLocaleDateString() });
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">El paquete fue rechazado por el destinatario tras más de 72 horas (no hay compensación).</div>`;
+                }
+                document.getElementById('rep-incidencia-tipo').value = "";
+                return;
+            }
+
+            // Acciones normales de reparto
+            if (accion === 'INICIAR_REPARTO') {
+                if (p.estado !== 'CENTRO_DESTINO') {
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El paquete debe estar en el centro de destino antes de iniciar el reparto domiciliario.</div>`;
+                    return;
+                }
+                p.estado = "EN_REPARTO";
+                p.historial.push({ mensaje: "El paquete ha <b>salido a ruta</b> de reparto domiciliario.", fecha: new Date().toLocaleDateString() });
+                res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">El paquete ha iniciado su ruta de reparto con éxito.</div>`;
+            } else if (accion === 'COMPLETAR') {
+                if (p.estado !== 'EN_REPARTO') {
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El paquete debe estar en ruta de reparto para poder completar la entrega.</div>`;
+                    return;
+                }
+                const pod = document.getElementById('rep-pod').value.trim();
+                const archivo = document.getElementById('rep-archivo').files.length;
+                if (!pod && archivo === 0) {
+                    res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: Es obligatorio adjuntar una firma o fotografía como evidencia digital.</div>`;
+                    return;
+                }
+                p.estado = "ENTREGADO";
+                p.historial.push({ mensaje: "El paquete ha sido <b>entregado exitosamente</b> con evidencia digital registrada.", fecha: new Date().toLocaleDateString() });
+                res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">Entrega completada exitosamente. Evidencia digital guardada.</div>`;
+            }
+        }
+
+        function actualizarTablaAdmin() {
+            const tbody = document.getElementById('admin-tabla-paquetes');
+            tbody.innerHTML = '';
+            for (let g in baseDatosPaquetes) {
+                let p = baseDatosPaquetes[g];
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${p.guia}</b></td>
+                        <td>${p.origen}</td>
+                        <td>${p.destino}</td>
+                        <td>${p.telefono}</td>
+                        <td>${p.peso} kg</td>
+                        <td>${p.largo} m</td>
+                        <td>${p.ancho} m</td>
+                        <td>${p.alto} m</td>
+                        <td>$${p.costo.toFixed(2)} MXN</td>
+                        <td><span class="badge-status ${obtenerClaseEstado(p.estado)}">${p.estado}</span></td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
