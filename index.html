@@ -275,28 +275,28 @@
         <!-- Selector de Roles -->
         <section id="role-selector-view">
             <h2>Seleccione su rol operativo</h2>
-            <p>Cada rol otorga acceso exclusivo a sus módulos de control y flujo del negocio.</p>
+            <p>Cada rol otorga acceso exclusivo a sus módulos de control y flujo del negocio[cite: 14].</p>
             
             <div class="roles-grid">
                 <div class="role-card" onclick="seleccionarRol('cliente')">
                     <h3>Cliente</h3>
-                    <p>Rastreo de paquete, ruta, costo y actualizaciones.</p>
+                    <p>Rastreo de paquete, ruta, costo y actualizaciones[cite: 14].</p>
                 </div>
                 <div class="role-card" onclick="seleccionarRol('recepcion')">
                     <h3>Recepción (Sucursal)</h3>
-                    <p>Registro, validación de dimensiones, ciudades, cálculo de tarifa y guía.</p>
+                    <p>Registro, validación de dimensiones, ciudades, cálculo de tarifa y guía[cite: 14].</p>
                 </div>
                 <div class="role-card" onclick="seleccionarRol('transito')">
                     <h3>Centros de Distribución y Tránsito</h3>
-                    <p>Actualización secuencial en CD y gestión de paquetes en centro de destino.</p>
+                    <p>Actualización secuencial en CD y gestión de paquetes en centro de destino[cite: 14].</p>
                 </div>
                 <div class="role-card" onclick="seleccionarRol('repartidor')">
                     <h3>Repartidor</h3>
-                    <p>Gestión de ruta, inicio/completado de entrega y registro individualizado de incidencias.</p>
+                    <p>Gestión de ruta, inicio/completado de entrega y registro individualizado de incidencias[cite: 14].</p>
                 </div>
                 <div class="role-card" onclick="seleccionarRol('admin')">
                     <h3>Administrador</h3>
-                    <p>Base de datos global con el detalle completo de los paquetes y costos.</p>
+                    <p>Base de datos global con el detalle completo de los paquetes y costos[cite: 14].</p>
                 </div>
             </div>
         </section>
@@ -315,7 +315,7 @@
         <!-- VISTA RECEPCIÓN -->
         <div id="view-recepcion" class="role-view">
             <h2>Módulo de Recepción (Sucursal)</h2>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">Validación física, ciudades de origen/destino, cálculo de tarifa y teléfono.</p>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Validación física, ciudades de origen/destino, cálculo de tarifa y teléfono[cite: 14].</p>
             
             <div class="form-row">
                 <div class="form-group">
@@ -379,7 +379,7 @@
         <!-- VISTA TRÁNSITO -->
         <div id="view-transito" class="role-view">
             <h2>Módulo de Centros de Distribución y Tránsito</h2>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">Control logístico y avance secuencial en sucursal y centro de destino.</p>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Control logístico y avance secuencial en sucursal y centro de destino[cite: 14].</p>
             <div class="form-group">
                 <label>Número de guía de paquete</label>
                 <input type="text" id="tra-guia" placeholder="Ej. CBX-BEF8A079" value="">
@@ -445,7 +445,7 @@
         <!-- VISTA ADMINISTRADOR -->
         <div id="view-admin" class="role-view">
             <h2>Módulo de Administrador</h2>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">Base de datos global con el detalle completo de todos los datos ingresados en recepción.</p>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Base de datos global con el detalle completo de todos los datos ingresados en recepción[cite: 14].</p>
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
@@ -471,7 +471,13 @@
     </main>
 
     <script>
-        let baseDatosPaquetes = {};
+        // Carga la base de datos desde localStorage si existe, de lo contrario inicia un objeto vacío
+        let baseDatosPaquetes = JSON.parse(localStorage.getItem('cargobox_paquetes')) || {};
+
+        // Función para guardar cambios en el almacenamiento local del navegador
+        function guardarBD() {
+            localStorage.setItem('cargobox_paquetes', JSON.stringify(baseDatosPaquetes));
+        }
 
         function seleccionarRol(rol) {
             document.getElementById('role-selector-view').style.display = 'none';
@@ -590,6 +596,8 @@
                 historial: [{ mensaje: `El paquete ha sido <b>recibido</b> en la sucursal de origen (${origen}) con destino a (${destino}) y se ha generado la guía.`, fecha: new Date().toLocaleDateString() }]
             };
 
+            guardarBD(); // Guarda en localStorage
+
             res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">¡Se ha generado la guía con éxito! Guía: <b>${nuevaGuia}</b> | Costo estimado: <b>$${costoCalculado.toFixed(2)} MXN</b></div>`;
         }
 
@@ -638,6 +646,9 @@
 
             p.estado = estadoTexto;
             p.historial.push({ mensaje: mensajeHistorial, fecha: new Date().toLocaleDateString() });
+            
+            guardarBD(); // Guarda en localStorage
+
             res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">${mensajeHistorial}</div>`;
         }
 
@@ -659,7 +670,6 @@
                 return;
             }
 
-            // Si se seleccionó una incidencia
             if (incidenciaTipo) {
                 if (incidenciaTipo === 'ausente') {
                     p.intentos += 1;
@@ -680,7 +690,7 @@
                     p.estado = "DAÑADO";
                     p.historial.push({ mensaje: "Incidencia registrada: <b>Paquete dañado</b>. Se ha documentado el daño y generado reporte para evaluación del centro de distribución.", fecha: new Date().toLocaleDateString() });
                     res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Documentar daños: Reporte generado. El centro de distribución evaluará el daño para determinar devolución o cancelación del pedido.</div>`;
-                } else if (incidencia_tipo = incidenciaTipo === 'perdida') {
+                } else if (incidenciaTipo === 'perdida') {
                     p.estado = "PERDIDO";
                     p.historial.push({ mensaje: "Incidencia registrada: <b>Pérdida</b> (>72 horas sin movimiento). Se declara pérdida y procede compensación.", fecha: new Date().toLocaleDateString() });
                     res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">El paquete ha pasado más de 72 horas sin saber nada. Se declara pérdida y se procede con la compensación.</div>`;
@@ -689,11 +699,12 @@
                     p.historial.push({ mensaje: "Incidencia registrada: <b>Rechazo</b> por el destinatario (sin compensación).", fecha: new Date().toLocaleDateString() });
                     res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">El paquete fue rechazado por el destinatario tras más de 72 horas (no hay compensación).</div>`;
                 }
+                
+                guardarBD(); // Guarda en localStorage
                 document.getElementById('rep-incidencia-tipo').value = "";
                 return;
             }
 
-            // Acciones normales de reparto
             if (accion === 'INICIAR_REPARTO') {
                 if (p.estado !== 'CENTRO_DESTINO') {
                     res.innerHTML = `<div class="alert" style="background:#f8d7da; color:#721c24;">Error: El paquete debe estar en el centro de destino antes de iniciar el reparto domiciliario.</div>`;
@@ -717,6 +728,8 @@
                 p.historial.push({ mensaje: "El paquete ha sido <b>entregado exitosamente</b> con evidencia digital registrada.", fecha: new Date().toLocaleDateString() });
                 res.innerHTML = `<div class="alert" style="background:#d4edda; color:#155724;">Entrega completada exitosamente. Evidencia digital guardada.</div>`;
             }
+
+            guardarBD(); // Guarda en localStorage
         }
 
         function actualizarTablaAdmin() {
